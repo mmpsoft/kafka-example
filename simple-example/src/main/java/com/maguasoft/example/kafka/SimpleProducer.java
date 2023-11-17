@@ -5,19 +5,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
-public class Producer {
+public class SimpleProducer {
 
     public static void main(String[] args) throws InterruptedException {
         Map<String, Object> configs = Map.of(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "172.27.153.46:10086,172.27.153.46:10087,172.27.153.46:10088",
                 ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName(),
                 ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName(),
-                // 配置自定义分区器
+                // 配置自定义分区器，不指定时，使用默认分区器org.apache.kafka.clients.producer.internals.DefaultPartitioner
                 ProducerConfig.PARTITIONER_CLASS_CONFIG, MyPartitioner.class.getName(),
                 // 缓冲区大小，默认32m
                 ProducerConfig.BUFFER_MEMORY_CONFIG, 32 * 1024 * 1024,
@@ -49,7 +50,8 @@ public class Producer {
                     });
 
             // 同步发送
-            producer.send(new ProducerRecord<>("test", "Hello Kafka2")).get();
+            RecordMetadata recordMetadata = producer.send(new ProducerRecord<>("test", "Hello Kafka3")).get();
+            log.info("SimpleProducer Synchronized send, recordMetadata: {}", recordMetadata);
         } catch (Exception e) {
             log.error("Producer error. Cause by: ", e);
         }
